@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 
 public class RuleEngineTest {
@@ -67,6 +68,55 @@ public class RuleEngineTest {
         List<PointOutputDTO> result = RuleEngine.execute(input, ruleSetCode, PointInputDTO.class, PointOutputDTO.class);
         result.forEach(record -> System.out.println(String.format("规则 [%s] : 积分[%s] 说明：%s", record.getHitRuleName(), record.getPoint(), record.getHitDesc())));
         Assert.assertEquals(5, result.size());
+    }
+
+    private Object t = new Object();
+
+    @Test
+    public void lock() throws InterruptedException {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    synchronized (t) {
+                        System.out.println("1");
+                        t.wait();
+                        t.notify();
+                        System.out.println("2");
+                        t.wait();
+                        t.notify();
+                        System.out.println("3");
+                        t.wait();
+                        t.notify();
+                        System.out.println("4");
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (t) {
+                    try {
+                        System.out.println("A");
+                        t.notify();
+                        t.wait();
+                        System.out.println("B");
+                        t.notify();
+                        t.wait();
+                        System.out.println("C");
+                        t.notify();
+                        t.wait();
+                        System.out.println("D");
+                        t.notify();
+                        t.wait();
+                    }catch (Exception e){}
+                }
+            }
+        }).start();
+        new CountDownLatch(1).await();
     }
 
 }
