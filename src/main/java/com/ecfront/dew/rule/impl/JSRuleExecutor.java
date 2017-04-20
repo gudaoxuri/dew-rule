@@ -55,6 +55,7 @@ public class JSRuleExecutor implements RuleExecutor {
             ).collect(Collectors.toList());
             String js = String.join("\r\n", codes);
             engine.eval(new InputStreamReader(getClass().getResourceAsStream("/underscore.js")));
+            engine.eval(new InputStreamReader(getClass().getResourceAsStream("/underscore.string.js")));
             engine.eval(js);
             JS_CACHE.put(ruleSet.getCode(), (Invocable) engine);
             JS_CACHE_CHANGE_MONITOR.put(ruleSet.getCode(), JsonHelper.toJsonString(ruleSet).hashCode());
